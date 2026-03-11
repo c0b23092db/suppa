@@ -1,0 +1,24 @@
+comment = ["//", "#", "--"]
+
+[TODO]
+mark = "✅"
+checkbox = true
+
+[NOTE]
+mark = "📒"
+alias = ["INFO","MEMO"]
+
+[FIX]
+mark = "🔥"
+alias = ["FIXIT", "FIXME", "BUG", "ISSUE"]
+
+[WARNING]
+mark = "⚠️"
+alias = ["WARN","XXX"]
+
+[HACK]
+mark = "🔨"
+
+[PERF]
+mark = "⚡"
+alias = ["OPTIMIZE"]
