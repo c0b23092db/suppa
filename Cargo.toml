@@ -5,6 +5,7 @@ description = "CLI: Extract TODO-like annotations into Markdown"
 edition = "2024"
 authors = ["ikata"]
 license = "MIT"
+repository = "https://github.com/c0b23092db/suppa"
 
 [[bin]]
 name = "spp"
