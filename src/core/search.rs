@@ -1,107 +1,106 @@
-use crate::model::{Annotation, Config};
+use crate::model::{Annotation, Config, LabelDefinition};
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Context, Result};
 use regex::Regex;
-use std::collections::HashSet;
-use std::fs::read_to_string;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+/// Collect annotations from source files based on the provided configuration
 pub fn collect_annotations(root: &Path, config: &Config) -> Result<Vec<Annotation>> {
     let mut annotations = Vec::new();
-
-    for label in &config.labels {
-        let mut unique = HashSet::new();
-        for comment in &config.comments {
-            for term in &label.terms {
-                let pattern = build_pattern(comment, term)?;
-                let matches = run_rg(root, &pattern)?;
-                for (file, line_number, line_text) in matches {
-                    if let Some(content) = extract_content(&line_text, &pattern) {
-                        let content = content.trim().to_string();
-                        if content.is_empty() {
-                            continue;
-                        }
-
-                        let annotation = Annotation {
-                            label: label.name.clone(),
-                            content,
-                            file,
-                            line: line_number,
-                        };
-
-                        if unique.insert(annotation.clone()) {
-                            annotations.push(annotation);
-                        }
-                    }
-                }
-            }
+    let matches = run_matches_paser(root, config)?;
+    for (file, line_number, label, line_text) in matches {
+        if !line_text.is_empty() {
+            annotations.push(Annotation {
+                file: file.clone(),
+                line: line_number,
+                label,
+                content: line_text,
+            });
         }
     }
-
     Ok(annotations)
 }
 
-fn build_pattern(comment: &str, term: &str) -> Result<Regex> {
-    let escaped_comment = regex::escape(comment);
-    let escaped_term = regex::escape(term);
-    let pattern = format!(
-        r"(?:^|\s){}\s*{}\s*:\s*(.*)$",
-        escaped_comment, escaped_term
-    );
-    Regex::new(&pattern).with_context(|| format!("invalid regex pattern: {pattern}"))
+/// Simple print annotations in a human-readable format
+pub fn simple_print_annotations(root: &Path, config: &Config) -> Result<()> {
+    let matches = run_matches_paser(root, config)?;
+    for (file, line_number, label, line_text) in matches {
+        println!(
+            "{}:{} [{}] {}",
+            file.display(),
+            line_number,
+            label,
+            line_text
+        );
+    }
+    Ok(())
 }
 
-fn run_rg(root: &Path, pattern: &Regex) -> Result<Vec<(PathBuf, u64, String)>> {
-    let output = Command::new("rg")
-        .arg("-T")
-        .arg("md")
-        .arg("--files-with-matches")
-        .arg("-e")
+/// ripgrepを実行して、マッチした行の[ファイルパス,行番号,ラベル,行テキスト]を返す
+fn run_matches_paser(root: &Path, config: &Config) -> Result<Vec<(PathBuf, u64, String, String)>> {
+    let pattern = rg_build_pattern(&config.comments, &config.labels)
+        .context("Failed to Build Regex Pattern")?;
+    let mut command = Command::new("rg");
+    if !config.exclude.is_empty() {
+        for ext in &config.exclude {
+            command.arg("-T").arg(ext);
+        }
+    }
+    let output = command
+        .arg("--line-number")
+        .arg("--no-heading")
+        .arg("--with-filename")
+        .arg("--regexp")
         .arg(pattern.as_str())
         .arg(root)
         .output()
-        .context("failed to execute rg command. install ripgrep and ensure 'rg' is available")?;
-
-    if !output.status.success() {
-        if output.status.code() == Some(1) {
-            return Ok(Vec::new());
-        }
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        bail!("ripgrep command failed: {stderr}");
-    }
-
+        .context("Failed to execute rg command. install ripgrep and ensure 'rg' is available")?;
     let stdout = String::from_utf8_lossy(&output.stdout);
     let mut matches = Vec::new();
-
-    for file_path in stdout.lines() {
-        if file_path.trim().is_empty() {
-            continue;
-        }
-
-        let path = PathBuf::from(file_path);
-        let full_path = if path.is_absolute() {
-            path
-        } else {
-            root.join(path)
-        };
-
-        let content = match read_to_string(&full_path) {
-            Ok(c) => c,
-            Err(_) => continue,
-        };
-
-        for (idx, line) in content.lines().enumerate() {
-            if pattern.is_match(line) {
-                matches.push((full_path.clone(), (idx + 1) as u64, line.to_string()));
-            }
+    for line in stdout.lines() {
+        if let Some(match_result) = text_pattern(line, &config.comments) {
+            matches.push(match_result);
         }
     }
     Ok(matches)
 }
 
-fn extract_content(line_text: &str, pattern: &Regex) -> Option<String> {
-    pattern
-        .captures(line_text)
-        .and_then(|caps| caps.get(1).map(|m| m.as_str().to_string()))
+/// ripgrepの正規表現パターンを構築する
+fn rg_build_pattern(comments: &[String], labels: &[LabelDefinition]) -> Result<Regex> {
+    let string_comments = comments.join("|");
+    let string_terms = labels
+        .iter()
+        .filter(|label| label.enabled)
+        .flat_map(|label| label.alias.iter())
+        .cloned()
+        .collect::<Vec<_>>()
+        .join("|");
+    let pattern = format!(r"({})\s*({})\s*:\s*(.+)", string_comments, string_terms);
+    Regex::new(&pattern).with_context(|| format!("invalid regex pattern: {pattern}"))
+}
+
+/// ripgrepの出力行を解析して[ファイルパス,行番号,ラベル,行テキスト]を抽出する
+fn text_pattern(line: &str, comments: &[String]) -> Option<(PathBuf, u64, String, String)> {
+    let line = line
+        .strip_prefix(".\\")
+        .or_else(|| line.strip_prefix("./"))
+        .unwrap_or(line);
+    let mut parts = line.splitn(4, ':');
+    let file = PathBuf::from(parts.next().unwrap_or("").to_string());
+    let line_number = parts.next().unwrap_or("0").parse::<u64>().unwrap_or(0);
+    let mut label = parts.next().unwrap_or("").trim().to_string();
+    for comment in comments {
+        label = label
+            .strip_prefix(comment)
+            .unwrap_or(&label)
+            .trim()
+            .to_string();
+    }
+    let line_text = parts.next().unwrap_or("").trim().to_string();
+    if !line_text.is_empty() {
+        Some((file, line_number, label, line_text))
+    } else {
+        None
+    }
 }

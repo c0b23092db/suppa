@@ -1,6 +1,6 @@
 [package]
 name = "suppa"
-version = "0.1.0"
+version = "0.2.0"
 description = "CLI: Extract TODO-like annotations into Markdown"
 edition = "2024"
 authors = ["ikata"]
@@ -16,7 +16,7 @@ lto = true
 codegen-units = 1
 
 [dependencies]
-toml = "1.0"
+toml = { version = "1.0", features = ["preserve_order"] }
 anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 dirs = "6.0"

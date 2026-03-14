@@ -1,13 +1,13 @@
 mod core;
 mod model;
+mod tests;
 use core::{
     build_markdown, collect_annotations, create_markdown, load_config, resolve_config_path,
-    update_markdown,
+    simple_print_annotations, update_markdown,
 };
 
-use anyhow::{Context, Result};
+use anyhow::{Result, bail};
 use clap::{Parser, Subcommand};
-use std::fs;
 use std::path::PathBuf;
 
 /// Extract TODO-like annotations into Markdown
@@ -29,33 +29,41 @@ struct Args {
 }
 #[derive(Subcommand, Debug)]
 enum Command {
-    /// Create a new Markdown file with current annotations (default)
-    Create,
+    /// Create a new Markdown file with current annotations
+    #[command(alias = "create")]
+    New,
     /// Update the output file with current annotations
     #[command(alias = "up")]
     Update,
     /// Print the current annotations
     Print,
+    /// Simple Print
+    #[command(alias = "sp")]
+    SimplePrint,
 }
 
 fn main() -> Result<()> {
     let args = Args::parse();
-    let root = fs::canonicalize(&args.root)
-        .with_context(|| format!("Failed to resolve root path: {}", args.root.display()))?;
+    if !args.root.exists() {
+        bail!("root path not found: {}", args.root.display());
+    }
     let config_path = resolve_config_path(args.config)?;
     let config = load_config(&config_path)?;
-    let annotations = collect_annotations(&root, &config)?;
+    let annotations = collect_annotations(&args.root, &config)?;
     match args.command {
         Some(Command::Print) => {
-            let markdown = build_markdown(&root, &config, &annotations);
+            let markdown = build_markdown(&args.root, &config, &annotations);
             println!("{}", markdown);
         }
-        Some(Command::Update) => {
-            update_markdown(&args.output, &root, &config, &annotations)?;
-        }
-        Some(Command::Create) | None => {
-            let markdown = build_markdown(&root, &config, &annotations);
-            create_markdown(&args.output, &markdown)?;
+        Some(Command::SimplePrint) => simple_print_annotations(&args.root, &config)?,
+        Some(Command::New) => create_markdown(&args.output, &args.root, &config, &annotations)?,
+        Some(Command::Update) => update_markdown(&args.output, &args.root, &config, &annotations)?,
+        None => {
+            if args.output.exists() {
+                update_markdown(&args.output, &args.root, &config, &annotations)?;
+            } else {
+                create_markdown(&args.output, &args.root, &config, &annotations)?;
+            }
         }
     }
     Ok(())

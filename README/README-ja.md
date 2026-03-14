@@ -2,7 +2,7 @@
 ```bash
 spp.exe
 ```
-**プロジェクトファイルのアノテーションコメントをMarkdownファイルで出力するCLI**
+**プロジェクトのアノテーションコメントをMarkdownファイルで出力するCLI**
 
 English - [README.md](../README.md)
 
@@ -33,7 +33,7 @@ cargo install --git https://github.com/c0b23092db/suppa
 ```
 
 ### binary
-- [Windows](https://github.com/c0b23092db/suppa/releases/download/v0.1.0/spp.exe)
+- [Windows](https://github.com/c0b23092db/suppa/releases/download/v0.2.0/spp.exe)
 
 ## コマンド
 ```bash
@@ -43,10 +43,11 @@ CLI: Extract TODO-like annotations into Markdown
 Usage: spp.exe [OPTIONS] [COMMAND]
 
 Commands:
-  create  Create a new Markdown file with current annotations (default)
-  update  Update the output file with current annotations
-  print   Print the current annotations
-  help    Print this message or the help of the given subcommand(s)
+  new           Create a new Markdown file with current annotations
+  update        Update the output file with current annotations
+  print         Print the current annotations
+  simple-print  Simple Print
+  help          Print this message or the help of the given subcommand(s)
 
 Options:
   -r, --root <ROOT>      Project root directory to scan [default: .]
@@ -62,64 +63,114 @@ Options:
 | `--root` | `-r` | `.` | スキャン対象のプロジェクトルート |
 | `--output` | `-o` | `annotations.md` | Markdownファイルのパス |
 
-### 新規作成(Create)
+### デフォルト動作
+```
+spp
+```
+- 出力先のファイルが**存在しない**場合: [新規作成(New)](#新規作成new)
+- 出力先のファイルが**存在する**場合: [更新(Update)](#更新update)
+
+### 新規作成(New)
 アノテーションを抽出してMarkdownファイルを生成します。
+
 #### デフォルト設定（~/.config/suppa/config.toml）
 ```bash
-spp
+spp new
 spp create
 ```
+
 #### 設定ファイルを指定
 ```bash
-spp.exe -c suppa.toml
+spp -c suppa.toml
 ```
-#### 出力先・スキャン対象を指定
+
+#### スキャン対象・出力先を指定
 ```bash
-spp.exe -r ./src -o todo.md
+spp -r ./src -o todo.md
 ```
 
 ### 更新(Update)
+```bash
+spp up
+spp update
+```
 既存のMarkdownファイルを更新します。
 `checkbox = true` のラベルは **新規項目の追記のみ** 行い、既存の `[x]` チェック状態を保持します。
-```bash
-spp.exe up
-spp.exe update
+
+#### チェックボックスの扱い
+`checkbox`の対象となっている章でリストにチェックが入っている場合、`### Archive:~~~`に移動されます。
+ファイルから対象の文章が削除されても、こちらのリストにある要素は削除されません。
+
+```md
+## ✅ TODO
+- [ ] Annotation for 1 (example\Rust.rs:1)
+- [ ] Annotation for 2 (example\Rust.rs:2)
+```
+↓
+```md
+## ✅ TODO
+- [ ] Annotation for 2 (example\Rust.rs:2)
+
+### Archive:TODO
+- [x] Annotation for 1 (example\Rust.rs:1)
 ```
 
 ### 出力(Print)
-ターミナルにMarkdown形式で出力します。
 ```bash
-spp.exe print
+spp print
+```
+ターミナルにMarkdown形式で出力します。
+
+### 単純出力(SimplePrint)
+```bash
+spp simple-print
+spp sp
+```
+ターミナルに簡易リストで出力します。
+```
+example\Rust.rs:1 [TODO] Annotation for todo
+example\Rust.rs:2 [FIX] Annotation for fix
 ```
 
 ## 設定ファイル（TOML）
 ```toml
 comment = ["//", "#", "--"]
+exclude = ["md"]
 [Example]
+enabled = true
 mark = "✅"
 alias = ["ex"]
 checkbox = false
 ```
+章の並び順は**tomlに設定した順番**になります。
 
 ### 設定項目
 
 | キー | 説明 |
 | --- | --- |
 | `comment` | コメント記号のリスト |
+| `exclude` | 除外するファイルのリスト |
 
 | キー | 説明 |
 | --- | --- |
+| `enabled` | 有効化 |
 | `mark` | セクションヘッダーに付けるマーク |
 | `checkbox` | `true` にすると `- [ ]` チェックボックス形式で出力 |
 | `alias` | 同一ラベルとして扱うエイリアス名のリスト |
 
 ### デフォルト設定
+設定ファイル: [config.toml](../example/config.toml)
 ```toml
 comment = ["//", "#", "--"]
+exclude = ["md"]
 
 [TODO]
 mark = "✅"
 checkbox = true
+
+[INFO]
+mark = "📒"
+alias = ["NOTE"]
 
 [FIX]
 mark = "🔥"
@@ -127,66 +178,65 @@ alias = ["FIXIT", "FIXME", "BUG", "ISSUE"]
 
 [WARNING]
 mark = "⚠️"
-alias = ["WARN","XXX"]
+alias = ["WARN"]
+
+[XXX]
+mark = "？"
 
 [HACK]
+enabled = false
 mark = "🔨"
 
 [PERF]
 mark = "⚡"
 alias = ["OPTIMIZE"]
-
-[NOTE]
-mark = "📒"
-alias = ["INFO","MEMO"]
 ```
 
 ## 出力例
+デフォルトの設定で出力しています。
 
 ### Input File
+対象ファイル: [Rust.rs](../example/Rust.rs)
 ```rs
 // TODO: Annotation for todo
 // FIX: Annotation for fix
 // WARNING: Annotation for warning
-// HACK: Annotation for hack
-// PERF: Annotation for performance
+// XXX: Annotation for xxx
 // NOTE: Annotation for note
+// INFO: Annotation for info
+// HACK: Annotation for hack
 fn main(){
     println!("Hello, world!");
 }
 ```
 
 ### Output File
+出力ファイル: [annotations.md](../example/annotations.md)
 ```md
 # suppa
-
-## 🔥 FIX
-- Annotation for fix (example\Rust.rs:2)
-
-## 🔨 HACK
-- Annotation for hack (example\Rust.rs:4)
-
-## 📒 NOTE
-- Annotation for note (example\Rust.rs:6)
-
-## ⚡ PERF
-- Annotation for performance (example\Rust.rs:5)
 
 ## ✅ TODO
 - [ ] Annotation for todo (example\Rust.rs:1)
 
+## 📒 INFO
+- Annotation for note (example\Rust.rs:5)
+- Annotation for info (example\Rust.rs:6)
+
+## 🔥 FIX
+- Annotation for fix (example\Rust.rs:2)
+
 ## ⚠️ WARNING
 - Annotation for warning (example\Rust.rs:3)
+
+## ？ XXX
+- Annotation for xxx (example\Rust.rs:4)
 
 ```
 
 ## TODO
-- [ ] toml: include: 対象ファイル
-- [ ] toml: exclude: 除外ファイル
-- [ ] toml: enable: アノテーションの有効化
-- [ ] toml: sort: アノテーションの並び順
-- [ ] toml: priority: アノテーションの優先度
-- [ ] Run: ボトルネックの解消
+
+## 貢献
+バグ報告、機能提案、プルリクエストを歓迎します。
 
 ## LICENSE
 [MIT License](../LICENSE) / <http://opensource.org/licenses/MIT>

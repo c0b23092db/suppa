@@ -1,4 +1,4 @@
-comment = ["//", "#", "--"]
+comment = ["//", "#","--"]
 exclude = ["md"]
 
 [TODO]
@@ -21,9 +21,12 @@ alias = ["WARN"]
 mark = "？"
 
 [HACK]
-enabled = false
 mark = "🔨"
 
 [PERF]
 mark = "⚡"
 alias = ["OPTIMIZE"]
+
+[CHECK]
+enabled = true
+mark = "⌛"
