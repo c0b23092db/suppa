@@ -197,7 +197,7 @@ The order of sections follows **the order defined in the TOML file**.
 
 ### Default Configuration
 
-Configuration file: [config.toml](../example/config.toml)
+Configuration file: [config.toml](./example/config.toml)
 
 ```toml
 comment = ["//", "#", "--"]
@@ -238,7 +238,7 @@ Output using the default configuration.
 
 ### Input File
 
-Target file: [Rust.rs](../example/Rust.rs)
+Target file: [Rust.rs](./example/Rust.rs)
 
 ```rs
 // TODO: Annotation for todo
@@ -256,7 +256,7 @@ fn main(){
 
 ### Output File
 
-Output file: [annotations.md](../example/annotations.md)
+Output file: [annotations.md](./example/annotations.md)
 
 ```md
 # suppa
@@ -288,7 +288,7 @@ Bug reports, feature suggestions, and pull requests are welcome.
 
 ## LICENSE
 
-[MIT License](../LICENSE) / [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT)
+[MIT License](./LICENSE) / [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT)
 
 ## Developer
 
