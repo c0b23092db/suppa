@@ -1,10 +1,13 @@
 [package]
 name = "suppa"
-version = "0.2.0"
+version = "0.2.1"
 description = "CLI: Extract TODO-like annotations into Markdown"
-edition = "2024"
-authors = ["ikata"]
+keywords = ["cli","productivity","annotation","todo","markdown"]
+categories = ["command-line-utilities", "development-tools"]
 license = "MIT"
+edition = "2024"
+readme = "README.md"
+authors = ["ikata"]
 repository = "https://github.com/c0b23092db/suppa"
 
 [[bin]]
