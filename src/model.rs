@@ -1,5 +1,24 @@
 use serde::Deserialize;
 use std::path::PathBuf;
+use std::fmt;
+
+#[derive(Debug, Clone)]
+pub enum Format {
+    Markdown,
+    csv,
+    json,
+    toon,
+}
+impl fmt::Display for Format {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Format::Markdown => write!(f, "Markdown"),
+            Format::csv => write!(f, "csv"),
+            Format::json => write!(f, "json"),
+            Format::toon => write!(f, "toon"),
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Config {

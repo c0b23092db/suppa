@@ -20,6 +20,9 @@ struct Args {
     /// Output Markdown file
     #[arg(short, long, default_value = "annotations.md", global = true)]
     output: PathBuf,
+    /// Format of output
+    format: Option<String>,
+    #[arg(short, long, default_value = "Markdown", global = true)]
     /// Path to TOML config file
     #[arg(short, long, global = true)]
     config: Option<PathBuf>,
@@ -29,6 +32,8 @@ struct Args {
 }
 #[derive(Subcommand, Debug)]
 enum Command {
+    /// Initialize a default config file in the current directory
+    Init,
     /// Create a new Markdown file with current annotations
     #[command(alias = "create")]
     New,
@@ -42,6 +47,8 @@ enum Command {
     SimplePrint,
 }
 
+// TODO: 統計サマリで出力する機能を追加する
+// TODO: formatを変更できるシステムを追加する
 fn main() -> Result<()> {
     let args = Args::parse();
     if !args.root.exists() {
@@ -56,6 +63,9 @@ fn main() -> Result<()> {
             println!("{}", markdown);
         }
         Some(Command::SimplePrint) => simple_print_annotations(&args.root, &config)?,
+        Some(Command::Init) => {
+            // TODO: initを使えるようにする
+        }
         Some(Command::New) => create_markdown(&args.output, &args.root, &config, &annotations)?,
         Some(Command::Update) => update_markdown(&args.output, &args.root, &config, &annotations)?,
         None => {

@@ -234,6 +234,17 @@ fn main(){
 ```
 
 ## TODO
+- [ ] `--format`
+  - [x] Markdown
+  - [ ] CSV
+  - [ ] JSON
+  - [ ] TOON
+- [ ] 統計サマリー
+- [ ] `spp simple-print` 色付き出力
+- [ ] `spp init`
+  - [ ] outputファイル
+  - [ ] configファイル
+- [ ] Linux版バイナリの配布
 
 ## 貢献
 バグ報告、機能提案、プルリクエストを歓迎します。
