@@ -281,6 +281,7 @@ Output file: [annotations.md](./example/annotations.md)
 
 
 ## TODO
+- Read `README/README-ja.md
 
 ## Contributing
 
