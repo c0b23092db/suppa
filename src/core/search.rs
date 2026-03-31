@@ -28,12 +28,11 @@ pub fn simple_print_annotations(root: &Path, config: &Config) -> Result<()> {
     let matches = run_matches_paser(root, config)?;
     for (file, line_number, label, line_text) in matches {
         let path = format!("{}", file.display()).bright_black();
-        let line = line_number.to_string().cyan();
         println!(
             "{}:{} [{}] {}",
             path,
-            line,
-            color_label(&label),
+            line_number.to_string().cyan(),
+            label.color(deterministic_color(&label)).bold(),
             line_text
         );
     }
@@ -106,12 +105,6 @@ fn text_pattern(line: &str, comments: &[String]) -> Option<(PathBuf, u64, String
     } else {
         None
     }
-}
-
-fn color_label(label: &str) -> colored::ColoredString {
-    label
-        .color(deterministic_color(label))
-        .bold()
 }
 
 fn deterministic_color(label: &str) -> Color {
