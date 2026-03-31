@@ -1,6 +1,7 @@
 use crate::model::{Config, DEFAULT_CONFIG, LabelDefinition, SerdeConfig};
 use anyhow::{Context, Result, anyhow, bail};
 use dirs::home_dir;
+use std::env::current_dir;
 use std::fs::{create_dir_all, read_to_string, write};
 use std::path::{Path, PathBuf};
 use toml::Value as TomlValue;
@@ -19,8 +20,17 @@ pub fn resolve_config_path(config_path: Option<PathBuf>) -> Result<PathBuf> {
     Ok(config_path)
 }
 
-/// Create default config file if it doesn't exist, and return the path
+/// 設定ファイルを読み込む。
+/// - initコマンドでカレントディレクトリに作成されるsuppa.tomlを優先的に読み込む
+/// - それがなければ、ホームディレクトリの.config/suppa/config.tomlを読み込む
+/// - どちらもなければ、ホームディレクトリの.config/suppa/config.tomlを作成して読み込む
 fn resolve_default_path() -> Result<PathBuf> {
+    let default_path = current_dir()
+        .with_context(|| "Failed to get current directory")?
+        .join("suppa.toml");
+    if default_path.exists() {
+        return Ok(default_path);
+    }
     let default_path = home_dir()
         .unwrap_or_else(|| PathBuf::from("~"))
         .join(".config")
@@ -28,14 +38,35 @@ fn resolve_default_path() -> Result<PathBuf> {
     if default_path.exists() {
         return Ok(default_path);
     }
-    let parent = default_path.parent().context("config path has no parent")?;
-    create_dir_all(parent).context("Failed to Create config directory")?;
-    write(&default_path, DEFAULT_CONFIG)
-        .with_context(|| format!("Failed to Write {DEFAULT_CONFIG:?}"))?;
+    create_default_config(&default_path, false)?;
     Ok(default_path)
 }
 
-/// Load configuration from the specified TOML file and convert it into the Config struct
+/// デフォルトファイルをカレントディレクトリに作成する
+pub fn run_init() -> Result<()> {
+    let default_path = current_dir()
+        .with_context(|| "Failed to get current directory")?
+        .join("suppa.toml");
+    create_default_config(&default_path, true)?;
+    Ok(())
+}
+
+/// デフォルトファイルを作成する
+fn create_default_config(path: &Path, text:bool) -> Result<()> {
+    if path.exists() {
+        bail!("config file already exists: {}", path.display());
+    }
+    let parent = path.parent().context("config path has no parent")?;
+    create_dir_all(parent).context("Failed to Create config directory")?;
+    write(path, DEFAULT_CONFIG)
+        .with_context(|| format!("Failed to Write {DEFAULT_CONFIG:?}"))?;
+    if text {
+        println!("Initialized default config file at: {}", path.display());
+    }
+    Ok(())
+}
+
+/// 指定されたパスから設定ファイルを読み込む
 pub fn load_config(path: &Path) -> Result<Config> {
     let content = read_to_string(path)
         .with_context(|| format!("Failed to read config file: {}", path.display()))?;

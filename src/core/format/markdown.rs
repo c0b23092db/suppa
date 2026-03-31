@@ -313,6 +313,7 @@ fn collect_existing_checkbox_data(markdown: &str, config: &Config) -> ExistingCh
     result
 }
 
+/// 既存 Markdown から、ラベルごとのセクション本文を収集します。
 fn collect_existing_section_bodies(markdown: &str, config: &Config) -> HashMap<String, String> {
     let header_to_label = config
         .labels

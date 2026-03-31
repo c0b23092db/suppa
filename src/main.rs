@@ -4,6 +4,7 @@ mod tests;
 use core::{
     build_json, build_markdown, collect_annotations, create_json, create_markdown, load_config,
     print_summary, resolve_config_path, simple_print_annotations, update_markdown,
+    run_init,
 };
 
 use anyhow::{Result, bail};
@@ -70,9 +71,7 @@ fn main() -> Result<()> {
         },
         Some(Command::SimplePrint) => simple_print_annotations(&args.root, &config)?,
         Some(Command::Summary) => print_summary(&config, &annotations)?,
-        Some(Command::Init) => {
-            // TODO: initを使えるようにする
-        }
+        Some(Command::Init) => run_init()?,
         Some(Command::New) => match format {
             OutputFormat::Markdown => create_markdown(&output_path, &args.root, &config, &annotations)?,
             OutputFormat::Json => create_json(&output_path, &args.root, &config, &annotations)?,

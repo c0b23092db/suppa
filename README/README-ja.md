@@ -43,15 +43,18 @@ CLI: Extract TODO-like annotations into Markdown
 Usage: spp.exe [OPTIONS] [COMMAND]
 
 Commands:
+  init          Initialize a default config file in the current directory
   new           Create a new Markdown file with current annotations
   update        Update the output file with current annotations
   print         Print the current annotations
   simple-print  Simple Print
+  summary       Print a summary of the annotations
   help          Print this message or the help of the given subcommand(s)
 
 Options:
   -r, --root <ROOT>      Project root directory to scan [default: .]
-  -o, --output <OUTPUT>  Output Markdown file [default: annotations.md]
+  -o, --output <OUTPUT>  Output file
+  -f, --format <FORMAT>  Format of output [default: Markdown]
   -c, --config <CONFIG>  Path to TOML config file
   -h, --help             Print help
   -V, --version          Print version
@@ -132,12 +135,26 @@ example\Rust.rs:1 [TODO] Annotation for todo
 example\Rust.rs:2 [FIX] Annotation for fix
 ```
 
+### 統計(summary)
+```bash
+spp summary
+```
+ターミナルにアノテーションコメントの統計を出力します。
+```
+Annotation Summary:
+  ✅ TODO: 1
+  📒 INFO: 2
+  🔥 BUG: 1
+  ⚠️ WARNING: 1
+```
+
 ## 設定ファイル（TOML）
 ```toml
 comment = ["//", "#", "--"]
 exclude = ["md"]
 [Example]
 enabled = true
+update = true
 mark = "✅"
 alias = ["ex"]
 checkbox = false
@@ -154,6 +171,7 @@ checkbox = false
 | キー | 説明 |
 | --- | --- |
 | `enabled` | 有効化 |
+| `update` | 更新の有無 |
 | `mark` | セクションヘッダーに付けるマーク |
 | `checkbox` | `true` にすると `- [ ]` チェックボックス形式で出力 |
 | `alias` | 同一ラベルとして扱うエイリアス名のリスト |
@@ -244,8 +262,8 @@ fn main(){
 - [ ] `spp init`
   - [ ] outputファイル
   - [ ] configファイル
-- [ ] toml
-  - [ ] 人が書く部分は編集しないようにしたい（update:false）
+- [x] toml
+  - [x] 人が書く部分は編集しないようにしたい（update:false）
 - [ ] `spp simple-print` 色付き出力
 - [ ] Linux版バイナリの配布
 
