@@ -1,4 +1,4 @@
-# Suppa
+# Suppa（すっぱ）
 ```bash
 spp.exe
 ```
@@ -56,15 +56,18 @@ CLI: Extract TODO-like annotations into Markdown
 Usage: spp.exe [OPTIONS] [COMMAND]
 
 Commands:
+  init          Initialize a default config file in the current directory
   new           Create a new Markdown file with current annotations
   update        Update the output file with current annotations
   print         Print the current annotations
   simple-print  Simple Print
+  summary       Print a summary of the annotations
   help          Print this message or the help of the given subcommand(s)
 
 Options:
   -r, --root <ROOT>      Project root directory to scan [default: .]
-  -o, --output <OUTPUT>  Output Markdown file [default: annotations.md]
+  -o, --output <OUTPUT>  Output file [default: annotations.<format>]
+  -f, --format <FORMAT>  Format of output [default: Markdown]
   -c, --config <CONFIG>  Path to TOML config file
   -h, --help             Print help
   -V, --version          Print version
@@ -74,7 +77,8 @@ Options:
 | :-- | :-- | :-- | :-- |
 | `--config` | `-c` | `~/.config/suppa/config.toml` | Path to TOML configuration file |
 | `--root` | `-r` | `.` | Project root directory to scan |
-| `--output` | `-o` | `annotations.md` | Path to Markdown file |
+| `--output` | `-o` | `annotations.<format>` | Path to output file |
+| `--format` | `-f` | `markdown` | Output format (`markdown`/`json`/`toon`) |
 
 ### Default Behavior
 
@@ -164,6 +168,33 @@ Outputs a simple list to the terminal.
 ```
 example\Rust.rs:1 [TODO] Annotation for todo
 example\Rust.rs:2 [FIX] Annotation for fix
+```
+
+### Initialize Config (Init)
+
+```bash
+spp init
+```
+
+Creates a config file in the project root. The config is loaded in this order:
+1. Config in the project root
+2. `~/.config/suppa/config.toml`
+
+### Summary
+
+```bash
+spp summary
+```
+
+Prints annotation counts to the terminal.
+
+```
+Annotation Summary:
+  ✅ TODO: 1
+  📒 INFO: 2
+  🔥 FIX: 1
+  ⚠️ WARNING: 1
+  ？ XXX: 1
 ```
 
 
@@ -265,7 +296,8 @@ Output file: [annotations.md](./example/annotations.md)
 - [ ] Annotation for todo (example\Rust.rs:1)
 
 ## 📒 INFO
-- Annotation for note (example\Rust.rs:5)
+Japanese - [README-ja.md](README/README-ja.md)
+
 - Annotation for info (example\Rust.rs:6)
 
 ## 🔥 FIX
@@ -279,9 +311,115 @@ Output file: [annotations.md](./example/annotations.md)
 
 ```
 
+#### Toon
+
+Output file: [annotations.toon](./example/annotations.toon)
+
+```toon
+suppa:
+  "✅ TODO"[1]{check,path,line,context}:
+    false,"example\\Rust.rs",1,Annotation for todo
+  "📒 INFO"[2]{path,line,context}:
+    "example\\Rust.rs",5,Annotation for note
+    "example\\Rust.rs",6,Annotation for info
+  "🔥 FIX"[1]{path,line,context}:
+    "example\\Rust.rs",2,Annotation for fix
+  "⚠️ WARNING"[1]{path,line,context}:
+    "example\\Rust.rs",3,Annotation for warning
+  "？ XXX"[1]{path,line,context}:
+    "example\\Rust.rs",4,Annotation for xxx
+  "⚡ PERF"[0]:
+```
+
+#### Json
+
+> **Warning**: This format receives minimal maintenance.
+
+Output file: [annotations.json](./example/annotations.json)
+
+```json
+{
+  "project": "suppa",
+  "labels": [
+    {
+      "label": "TODO",
+      "mark": "✅",
+      "checkbox": true,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 1,
+          "content": "Annotation for todo"
+        }
+      ]
+    },
+    {
+      "label": "INFO",
+      "mark": "📒",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 5,
+          "content": "Annotation for note"
+        },
+        {
+          "file": "example\\Rust.rs",
+          "line": 6,
+          "content": "Annotation for info"
+        }
+      ]
+    },
+    {
+      "label": "FIX",
+      "mark": "🔥",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 2,
+          "content": "Annotation for fix"
+        }
+      ]
+    },
+    {
+      "label": "WARNING",
+      "mark": "⚠️",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 3,
+          "content": "Annotation for warning"
+        }
+      ]
+    },
+    {
+      "label": "XXX",
+      "mark": "？",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 4,
+          "content": "Annotation for xxx"
+        }
+      ]
+    },
+    {
+      "label": "PERF",
+      "mark": "⚡",
+      "checkbox": false,
+      "annotations": []
+    }
+  ]
+}
+```
+
 
 ## TODO
-- Read `README/README-ja.md
+
+- See [README/README-ja.md](README/README-ja.md) for the Japanese version.
 
 ## Contributing
 

@@ -7,16 +7,14 @@ use std::path::PathBuf;
 pub enum OutputFormat {
     Markdown,
     Json,
-    // csv,
-    // toon,
+    Toon,
 }
 impl fmt::Display for OutputFormat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             OutputFormat::Markdown => write!(f, "Markdown"),
             OutputFormat::Json => write!(f, "json"),
-            // OutputFormat::csv => write!(f, "csv"),
-            // OutputFormat::toon => write!(f, "toon"),
+            OutputFormat::Toon => write!(f, "toon"),
         }
     }
 }
@@ -28,7 +26,7 @@ impl OutputFormat {
         match raw.trim().to_ascii_lowercase().as_str() {
             "" | "markdown" | "md" => Ok(Self::Markdown),
             "json" => Ok(Self::Json),
-            "csv" | "toon" => bail!("format '{}' is not implemented yet", raw),
+            "toon" => Ok(Self::Toon),
             _ => bail!("unsupported format: {}", raw),
         }
     }

@@ -2,9 +2,9 @@ mod core;
 mod model;
 mod tests;
 use core::{
-    build_json, build_markdown, collect_annotations, create_json, create_markdown, load_config,
-    print_summary, resolve_config_path, simple_print_annotations, update_markdown,
-    run_init,
+    build_json, build_markdown, build_toon, collect_annotations, create_json, create_markdown,
+    create_toon, load_config, print_summary, resolve_config_path, run_init,
+    simple_print_annotations, update_markdown,
 };
 
 use anyhow::{Result, bail};
@@ -19,7 +19,7 @@ struct Args {
     /// Project root directory to scan
     #[arg(short, long, default_value = ".", global = true)]
     root: PathBuf,
-    /// Output file
+    /// Output file [default: annotations.<format>]
     #[arg(short, long, global = true)]
     output: Option<PathBuf>,
     /// Format of output
@@ -51,6 +51,7 @@ enum Command {
     Summary,
 }
 
+#[rustfmt::skip]
 fn main() -> Result<()> {
     let args = Args::parse();
     if !args.root.exists() {
@@ -62,12 +63,14 @@ fn main() -> Result<()> {
     let output_path = args.output.unwrap_or_else(|| match format {
         OutputFormat::Markdown => PathBuf::from("annotations.md"),
         OutputFormat::Json => PathBuf::from("annotations.json"),
+        OutputFormat::Toon => PathBuf::from("annotations.toon"),
     });
     let annotations = collect_annotations(&args.root, &config)?;
     match args.command {
         Some(Command::Print) => match format {
             OutputFormat::Markdown => println!("{}", build_markdown(&args.root, &config, &annotations)),
             OutputFormat::Json => println!("{}", build_json(&args.root, &config, &annotations)),
+            OutputFormat::Toon => println!("{}", build_toon(&args.root, &config, &annotations)),
         },
         Some(Command::SimplePrint) => simple_print_annotations(&args.root, &config)?,
         Some(Command::Summary) => print_summary(&config, &annotations)?,
@@ -75,10 +78,12 @@ fn main() -> Result<()> {
         Some(Command::New) => match format {
             OutputFormat::Markdown => create_markdown(&output_path, &args.root, &config, &annotations)?,
             OutputFormat::Json => create_json(&output_path, &args.root, &config, &annotations)?,
+            OutputFormat::Toon => create_toon(&output_path, &args.root, &config, &annotations)?,
         },
         Some(Command::Update) => match format {
             OutputFormat::Markdown => update_markdown(&output_path, &args.root, &config, &annotations)?,
             OutputFormat::Json => println!("Not implemented: update command is only available for Markdown format"),
+            OutputFormat::Toon => println!("Not implemented: update command is only available for Toon format"),
         },
         None => match format {
             OutputFormat::Markdown => {
@@ -89,6 +94,7 @@ fn main() -> Result<()> {
                 }
             }
             OutputFormat::Json => create_json(&output_path, &args.root, &config, &annotations)?,
+            OutputFormat::Toon => create_toon(&output_path, &args.root, &config, &annotations)?,
         },
     }
     Ok(())

@@ -52,14 +52,13 @@ pub fn run_init() -> Result<()> {
 }
 
 /// デフォルトファイルを作成する
-fn create_default_config(path: &Path, text:bool) -> Result<()> {
+fn create_default_config(path: &Path, text: bool) -> Result<()> {
     if path.exists() {
         bail!("config file already exists: {}", path.display());
     }
     let parent = path.parent().context("config path has no parent")?;
     create_dir_all(parent).context("Failed to Create config directory")?;
-    write(path, DEFAULT_CONFIG)
-        .with_context(|| format!("Failed to Write {DEFAULT_CONFIG:?}"))?;
+    write(path, DEFAULT_CONFIG).with_context(|| format!("Failed to Write {DEFAULT_CONFIG:?}"))?;
     if text {
         println!("Initialized default config file at: {}", path.display());
     }

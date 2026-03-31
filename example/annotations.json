@@ -1,0 +1,76 @@
+{
+  "project": "suppa",
+  "labels": [
+    {
+      "label": "TODO",
+      "mark": "✅",
+      "checkbox": true,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 1,
+          "content": "Annotation for todo"
+        }
+      ]
+    },
+    {
+      "label": "INFO",
+      "mark": "📒",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 5,
+          "content": "Annotation for note"
+        },
+        {
+          "file": "example\\Rust.rs",
+          "line": 6,
+          "content": "Annotation for info"
+        }
+      ]
+    },
+    {
+      "label": "FIX",
+      "mark": "🔥",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 2,
+          "content": "Annotation for fix"
+        }
+      ]
+    },
+    {
+      "label": "WARNING",
+      "mark": "⚠️",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 3,
+          "content": "Annotation for warning"
+        }
+      ]
+    },
+    {
+      "label": "XXX",
+      "mark": "？",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 4,
+          "content": "Annotation for xxx"
+        }
+      ]
+    },
+    {
+      "label": "PERF",
+      "mark": "⚡",
+      "checkbox": false,
+      "annotations": []
+    }
+  ]
+}

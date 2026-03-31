@@ -1,0 +1,13 @@
+suppa:
+  "✅ TODO"[1]{check,path,line,context}:
+    false,"example\\Rust.rs",1,Annotation for todo
+  "📒 INFO"[2]{path,line,context}:
+    "example\\Rust.rs",5,Annotation for note
+    "example\\Rust.rs",6,Annotation for info
+  "🔥 FIX"[1]{path,line,context}:
+    "example\\Rust.rs",2,Annotation for fix
+  "⚠️ WARNING"[1]{path,line,context}:
+    "example\\Rust.rs",3,Annotation for warning
+  "？ XXX"[1]{path,line,context}:
+    "example\\Rust.rs",4,Annotation for xxx
+  "⚡ PERF"[0]:

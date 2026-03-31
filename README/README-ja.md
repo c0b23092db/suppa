@@ -19,15 +19,15 @@ English - [README.md](../README.md)
 - [ripgrep](https://github.com/BurntSushi/ripgrep)
 
 ### cargo
-`cargo install`
+#### `cargo install`
 ```bash
 cargo install suppa
 ```
-`cargo binstall`
+#### `cargo binstall`
 ```bash
 cargo binstall suppa
 ```
-`cargo install --git`
+#### `cargo install --git`
 ```bash
 cargo install --git https://github.com/c0b23092db/suppa
 ```
@@ -37,7 +37,7 @@ cargo install --git https://github.com/c0b23092db/suppa
 
 ## コマンド
 ```bash
->spp
+> spp
 CLI: Extract TODO-like annotations into Markdown
 
 Usage: spp.exe [OPTIONS] [COMMAND]
@@ -53,7 +53,7 @@ Commands:
 
 Options:
   -r, --root <ROOT>      Project root directory to scan [default: .]
-  -o, --output <OUTPUT>  Output file
+  -o, --output <OUTPUT>  Output file [default: annotations.<format>]
   -f, --format <FORMAT>  Format of output [default: Markdown]
   -c, --config <CONFIG>  Path to TOML config file
   -h, --help             Print help
@@ -62,9 +62,10 @@ Options:
 
 | オプション | 短縮形 | デフォルト | 説明 |
 | --- | --- | --- | --- |
-| `--config` | `-c` | `~/.config/suppa/config.toml` | TOML設定ファイルのパス |
 | `--root` | `-r` | `.` | スキャン対象のプロジェクトルート |
 | `--output` | `-o` | `annotations.md` | Markdownファイルのパス |
+| `--format` | `-f` | `markdown` | 出力する形式 |
+| `--config` | `-c` | `~/.config/suppa/config.toml` | TOML設定ファイルのパス |
 
 ### デフォルト動作
 ```
@@ -74,13 +75,11 @@ spp
 - 出力先のファイルが**存在する**場合: [更新(Update)](#更新update)
 
 ### 新規作成(New)
-アノテーションを抽出してMarkdownファイルを生成します。
-
-#### デフォルト設定（~/.config/suppa/config.toml）
 ```bash
 spp new
 spp create
 ```
+アノテーションを抽出してMarkdownファイルを生成します。
 
 #### 設定ファイルを指定
 ```bash
@@ -118,18 +117,27 @@ spp update
 - [x] Annotation for 1 (example\Rust.rs:1)
 ```
 
+### 設定ファイルの初期化(Init)
+```bash
+spp init
+```
+プロジェクトルートに設定ファイルを作成します。
+設定ファイルは以下の順番で読み込まれます。
+1. プロジェクトルートの設定ファイル
+2. ホームディレクトリの`.config/suppa/config.toml`
+
 ### 出力(Print)
 ```bash
 spp print
 ```
-ターミナルにMarkdown形式で出力します。
+ターミナルに指定したフォーマットで出力します。
 
 ### 単純出力(SimplePrint)
 ```bash
 spp simple-print
 spp sp
 ```
-ターミナルに簡易リストで出力します。
+ターミナルに一覧を出力します。
 ```
 example\Rust.rs:1 [TODO] Annotation for todo
 example\Rust.rs:2 [FIX] Annotation for fix
@@ -144,8 +152,9 @@ spp summary
 Annotation Summary:
   ✅ TODO: 1
   📒 INFO: 2
-  🔥 BUG: 1
+  🔥 FIX: 1
   ⚠️ WARNING: 1
+  ？ XXX: 1
 ```
 
 ## 設定ファイル（TOML）
@@ -229,6 +238,8 @@ fn main(){
 ```
 
 ### Output File
+
+#### Markdown
 出力ファイル: [annotations.md](../example/annotations.md)
 ```md
 # suppa
@@ -251,20 +262,110 @@ fn main(){
 
 ```
 
+#### Toon
+出力ファイル: [annotations.toon](../example/annotations.toon)
+```toon
+suppa:
+  "✅ TODO"[1]{check,path,line,context}:
+    false,"example\\Rust.rs",1,Annotation for todo
+  "📒 INFO"[2]{path,line,context}:
+    "example\\Rust.rs",5,Annotation for note
+    "example\\Rust.rs",6,Annotation for info
+  "🔥 FIX"[1]{path,line,context}:
+    "example\\Rust.rs",2,Annotation for fix
+  "⚠️ WARNING"[1]{path,line,context}:
+    "example\\Rust.rs",3,Annotation for warning
+  "？ XXX"[1]{path,line,context}:
+    "example\\Rust.rs",4,Annotation for xxx
+  "⚡ PERF"[0]:
+```
+
+#### Json
+> [!WARNING]
+> この形式に対する基本的なメンテナンスは行われません。
+
+出力ファイル: [annotations.json](../example/annotations.json)
+
+```json
+{
+  "project": "suppa",
+  "labels": [
+    {
+      "label": "TODO",
+      "mark": "✅",
+      "checkbox": true,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 1,
+          "content": "Annotation for todo"
+        }
+      ]
+    },
+    {
+      "label": "INFO",
+      "mark": "📒",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 5,
+          "content": "Annotation for note"
+        },
+        {
+          "file": "example\\Rust.rs",
+          "line": 6,
+          "content": "Annotation for info"
+        }
+      ]
+    },
+    {
+      "label": "FIX",
+      "mark": "🔥",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 2,
+          "content": "Annotation for fix"
+        }
+      ]
+    },
+    {
+      "label": "WARNING",
+      "mark": "⚠️",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 3,
+          "content": "Annotation for warning"
+        }
+      ]
+    },
+    {
+      "label": "XXX",
+      "mark": "？",
+      "checkbox": false,
+      "annotations": [
+        {
+          "file": "example\\Rust.rs",
+          "line": 4,
+          "content": "Annotation for xxx"
+        }
+      ]
+    },
+    {
+      "label": "PERF",
+      "mark": "⚡",
+      "checkbox": false,
+      "annotations": []
+    }
+  ]
+}
+```
+
 ## TODO
-- [ ] `--format`
-  - [x] Markdown
-  - [x] JSON
-    - [x] new
-  - [ ] CSV
-  - [ ] TOON
-- [x] 統計サマリー
-- [x] `spp init`
-  - [x] configファイル
-- [x] toml
-  - [x] 人が書く部分は編集しないようにしたい（update:false）
-- [ ] `spp simple-print` 色付き出力
-- [ ] Linux版バイナリの配布
 
 ## 貢献
 現状は頻繁な更新が行われるためお待ちください。
