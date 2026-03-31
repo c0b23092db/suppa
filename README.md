@@ -44,7 +44,7 @@ cargo install --git https://github.com/c0b23092db/suppa
 
 ### binary
 
-- [Windows](https://github.com/c0b23092db/suppa/releases/download/v0.2.0/spp.exe)
+- [Windows](https://github.com/c0b23092db/suppa/releases/download/v0.3.0/spp.exe)
 
 
 ## Commands
