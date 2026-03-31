@@ -7,9 +7,8 @@
   - [ ] CSV
   - [ ] TOON
 - [x] 統計サマリー
-- [ ] `spp init`
-  - [ ] outputファイル
-  - [ ] configファイル
+- [x] `spp init`
+  - [x] configファイル
 - [ ] toml
   - [ ] 人が書く部分は編集しないようにしたい（update:false）
 - [ ] `spp simple-print` 色付き出力
