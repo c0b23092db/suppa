@@ -1,6 +1,7 @@
 use crate::model::{Annotation, Config, LabelDefinition};
 
 use anyhow::{Context, Result};
+use colored::{Color, Colorize};
 use regex::Regex;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -26,11 +27,13 @@ pub fn collect_annotations(root: &Path, config: &Config) -> Result<Vec<Annotatio
 pub fn simple_print_annotations(root: &Path, config: &Config) -> Result<()> {
     let matches = run_matches_paser(root, config)?;
     for (file, line_number, label, line_text) in matches {
+        let path = format!("{}", file.display()).bright_black();
+        let line = line_number.to_string().cyan();
         println!(
             "{}:{} [{}] {}",
-            file.display(),
-            line_number,
-            label,
+            path,
+            line,
+            color_label(&label),
             line_text
         );
     }
@@ -103,4 +106,23 @@ fn text_pattern(line: &str, comments: &[String]) -> Option<(PathBuf, u64, String
     } else {
         None
     }
+}
+
+fn color_label(label: &str) -> colored::ColoredString {
+    label
+        .color(deterministic_color(label))
+        .bold()
+}
+
+fn deterministic_color(label: &str) -> Color {
+    const PALETTE: [Color; 6] = [
+        Color::Yellow,
+        Color::Cyan,
+        Color::Magenta,
+        Color::Green,
+        Color::Blue,
+        Color::Red,
+    ];
+    let hash = label.bytes().fold(0usize, |acc, b| acc.wrapping_add(b as usize));
+    PALETTE[hash % PALETTE.len()]
 }

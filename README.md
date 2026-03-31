@@ -285,7 +285,7 @@ Output file: [annotations.md](./example/annotations.md)
 
 ## Contributing
 
-Bug reports, feature suggestions, and pull requests are welcome.
+~~Bug reports, feature suggestions, and pull requests are welcome.~~
 
 ## LICENSE
 

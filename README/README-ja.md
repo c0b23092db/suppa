@@ -267,7 +267,8 @@ fn main(){
 - [ ] Linux版バイナリの配布
 
 ## 貢献
-バグ報告、機能提案、プルリクエストを歓迎します。
+現状は頻繁な更新が行われるためお待ちください。
+~~バグ報告、機能提案、プルリクエストを歓迎します。~~
 
 ## LICENSE
 [MIT License](../LICENSE) / <http://opensource.org/licenses/MIT>
