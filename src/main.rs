@@ -4,6 +4,7 @@ mod tests;
 use core::{
     build_markdown, collect_annotations, create_markdown, load_config, resolve_config_path,
     simple_print_annotations, update_markdown,
+    print_summary,
 };
 
 use anyhow::{Result, bail};
@@ -21,8 +22,8 @@ struct Args {
     #[arg(short, long, default_value = "annotations.md", global = true)]
     output: PathBuf,
     /// Format of output
-    format: Option<String>,
     #[arg(short, long, default_value = "Markdown", global = true)]
+    format: Option<String>,
     /// Path to TOML config file
     #[arg(short, long, global = true)]
     config: Option<PathBuf>,
@@ -45,9 +46,10 @@ enum Command {
     /// Simple Print
     #[command(alias = "sp")]
     SimplePrint,
+    /// Print a summary of the annotations
+    Summary,
 }
 
-// TODO: 統計サマリで出力する機能を追加する
 // TODO: formatを変更できるシステムを追加する
 fn main() -> Result<()> {
     let args = Args::parse();
@@ -58,11 +60,9 @@ fn main() -> Result<()> {
     let config = load_config(&config_path)?;
     let annotations = collect_annotations(&args.root, &config)?;
     match args.command {
-        Some(Command::Print) => {
-            let markdown = build_markdown(&args.root, &config, &annotations);
-            println!("{}", markdown);
-        }
+        Some(Command::Print) => println!("{}", build_markdown(&args.root, &config, &annotations)),
         Some(Command::SimplePrint) => simple_print_annotations(&args.root, &config)?,
+        Some(Command::Summary) => print_summary(&config, &annotations)?,
         Some(Command::Init) => {
             // TODO: initを使えるようにする
         }

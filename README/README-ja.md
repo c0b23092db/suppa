@@ -239,7 +239,7 @@ fn main(){
   - [ ] CSV
   - [ ] JSON
   - [ ] TOON
-- [ ] 統計サマリー
+- [x] 統計サマリー
 - [ ] `spp init`
   - [ ] outputファイル
   - [ ] configファイル

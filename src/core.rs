@@ -1,11 +1,19 @@
 mod config;
+mod common;
 mod search;
 mod format;
+mod function;
 
-pub use config::load_config;
-pub use config::resolve_config_path;
+pub use common::hashmap_annotations;
+pub use config::{
+    load_config,
+    resolve_config_path
+};
 pub use search::collect_annotations;
 pub use search::simple_print_annotations;
-pub use format::build_markdown;
-pub use format::create_markdown;
-pub use format::update_markdown;
+pub use function::print_summary;
+pub use format::{
+    build_markdown,
+    create_markdown,
+    update_markdown
+};
