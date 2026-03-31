@@ -84,6 +84,7 @@ pub fn load_config(path: &Path) -> Result<Config> {
         labels.push(LabelDefinition {
             label: key.to_string(),
             enabled: label_cfg.enabled,
+            update: label_cfg.update,
             mark: label_cfg.mark,
             checkbox: label_cfg.checkbox,
             alias: terms,

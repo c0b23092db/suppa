@@ -1,21 +1,35 @@
+use anyhow::{Result, bail};
 use serde::Deserialize;
-use std::path::PathBuf;
 use std::fmt;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
-pub enum Format {
+pub enum OutputFormat {
     Markdown,
-    csv,
-    json,
-    toon,
+    Json,
+    // csv,
+    // toon,
 }
-impl fmt::Display for Format {
+impl fmt::Display for OutputFormat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Format::Markdown => write!(f, "Markdown"),
-            Format::csv => write!(f, "csv"),
-            Format::json => write!(f, "json"),
-            Format::toon => write!(f, "toon"),
+            OutputFormat::Markdown => write!(f, "Markdown"),
+            OutputFormat::Json => write!(f, "json"),
+            // OutputFormat::csv => write!(f, "csv"),
+            // OutputFormat::toon => write!(f, "toon"),
+        }
+    }
+}
+impl OutputFormat {
+    pub fn parse(raw: Option<&str>) -> Result<Self> {
+        let Some(raw) = raw else {
+            return Ok(Self::Markdown);
+        };
+        match raw.trim().to_ascii_lowercase().as_str() {
+            "" | "markdown" | "md" => Ok(Self::Markdown),
+            "json" => Ok(Self::Json),
+            "csv" | "toon" => bail!("format '{}' is not implemented yet", raw),
+            _ => bail!("unsupported format: {}", raw),
         }
     }
 }
@@ -37,6 +51,8 @@ pub struct LabelDefinition {
     pub label: String,
     /// 有効化フラグ
     pub enabled: bool,
+    /// 更新の有無
+    pub update: bool,
     /// ラベルに対応するマーク（例: "✅"）
     pub mark: Option<String>,
     /// チェックボックスの有無
@@ -54,6 +70,9 @@ pub struct SerdeConfig {
     /// 有効化
     #[serde(default = "default_true")]
     pub enabled: bool,
+    /// 更新の有無
+    #[serde(default = "default_true")]
+    pub update: bool,
     /// チェックボックスの有無
     #[serde(default)]
     pub checkbox: bool,

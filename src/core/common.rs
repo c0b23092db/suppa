@@ -1,5 +1,7 @@
+use crate::model::{Annotation, Config};
 use std::collections::HashMap;
-use crate::model::{Config,Annotation};
+use std::fs::canonicalize;
+use std::path::Path;
 
 /// アノテーションのリストを、HashMap<ラベル, Vec<アノテーション>>形式にする
 pub fn hashmap_annotations<'a>(
@@ -27,4 +29,19 @@ pub fn hashmap_annotations<'a>(
         map.entry(canonical).or_default().push(a);
     }
     map
+}
+
+/// プロジェクト名をルートディレクトリから推測する
+pub fn project_name_from_root(root: &Path) -> String {
+    root.file_name()
+        .and_then(|s| s.to_str())
+        .filter(|s| !s.is_empty() && *s != "." && *s != "..")
+        .map(ToString::to_string)
+        .or_else(|| {
+            canonicalize(root)
+                .ok()
+                .and_then(|p| p.file_name().map(|name| name.to_owned()))
+                .and_then(|s| s.to_str().map(ToString::to_string))
+        })
+        .unwrap_or_else(|| "Project".to_string())
 }

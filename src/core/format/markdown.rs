@@ -1,9 +1,9 @@
+use crate::core::{hashmap_annotations, project_name_from_root};
 use crate::model::{Annotation, Config};
 use anyhow::{Context, Result};
 use std::collections::{HashMap, HashSet};
-use std::fs::{canonicalize, read_to_string, write};
+use std::fs::{read_to_string, write};
 use std::path::Path;
-use crate::core::hashmap_annotations;
 
 #[derive(Debug, Default)]
 struct ExistingCheckboxData {
@@ -107,22 +107,8 @@ fn build_updated_markdown(
     output
 }
 
-fn project_name_from_root(root: &Path) -> String {
-    root.file_name()
-        .and_then(|s| s.to_str())
-        .filter(|s| !s.is_empty() && *s != "." && *s != "..")
-        .map(ToString::to_string)
-        .or_else(|| {
-            canonicalize(root)
-                .ok()
-                .and_then(|p| p.file_name().map(|name| name.to_owned()))
-                .and_then(|s| s.to_str().map(ToString::to_string))
-        })
-        .unwrap_or_else(|| "Project".to_string())
-}
-
 /// Markdownファイルを作成する
-pub fn write_markdown(path: &Path, markdown: &str) -> Result<()> {
+fn write_markdown(path: &Path, markdown: &str) -> Result<()> {
     write(path, markdown)
         .with_context(|| format!("Failed to write output file: {}", path.display()))?;
     Ok(())

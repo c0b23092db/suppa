@@ -1,13 +1,18 @@
-use std::collections::HashMap;
+use crate::core::hashmap_annotations;
+use crate::model::{Annotation, Config};
 use anyhow::Result;
-use crate::model::{Config,Annotation};
-use crate::core::{hashmap_annotations};
+use std::collections::HashMap;
 
 pub fn print_summary(config: &Config, annotations: &[Annotation]) -> Result<()> {
     let label_marks: HashMap<String, String> = config
         .labels
         .iter()
-        .filter_map(|label| label.mark.as_ref().map(|mark| (label.label.clone(), mark.clone())))
+        .filter_map(|label| {
+            label
+                .mark
+                .as_ref()
+                .map(|mark| (label.label.clone(), mark.clone()))
+        })
         .collect();
     let summary = hashmap_annotations(config, annotations)
         .into_iter()

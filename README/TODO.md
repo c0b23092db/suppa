@@ -2,8 +2,9 @@
 
 - [ ] `--format`
   - [x] Markdown
+  - [x] JSON
+    - [x] new
   - [ ] CSV
-  - [ ] JSON
   - [ ] TOON
 - [x] 統計サマリー
 - [ ] `spp init`
