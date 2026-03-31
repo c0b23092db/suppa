@@ -46,6 +46,12 @@ pub fn build_markdown(root: &Path, config: &Config, annotations: &[Annotation]) 
         if !label.enabled {
             continue;
         }
+        if !label.update {
+            output.push('\n');
+            output.push_str(&header_for_label(label.mark.as_deref(), &label.label));
+            output.push('\n');
+            continue;
+        }
         let Some(entries) = grouped.get(label.label.as_str()) else {
             continue;
         };
@@ -68,6 +74,7 @@ fn build_updated_markdown(
     annotations: &[Annotation],
 ) -> String {
     let existing_checkbox = collect_existing_checkbox_data(existing, config);
+    let existing_sections = collect_existing_section_bodies(existing, config);
 
     let mut output = String::new();
     let project_name = project_name_from_root(root);
@@ -75,6 +82,20 @@ fn build_updated_markdown(
     let grouped = hashmap_annotations(config, annotations);
     for label in &config.labels {
         if !label.enabled {
+            continue;
+        }
+        if !label.update {
+            output.push('\n');
+            output.push_str(&header_for_label(label.mark.as_deref(), &label.label));
+            output.push('\n');
+            if let Some(existing_body) = existing_sections.get(&label.label)
+                && !existing_body.is_empty()
+            {
+                output.push_str(existing_body);
+                if !existing_body.ends_with('\n') {
+                    output.push('\n');
+                }
+            }
             continue;
         }
         if label.checkbox {
@@ -290,6 +311,54 @@ fn collect_existing_checkbox_data(markdown: &str, config: &Config) -> ExistingCh
         }
     }
     result
+}
+
+fn collect_existing_section_bodies(markdown: &str, config: &Config) -> HashMap<String, String> {
+    let header_to_label = config
+        .labels
+        .iter()
+        .map(|label| {
+            (
+                header_for_label(label.mark.as_deref(), &label.label),
+                label.label.clone(),
+            )
+        })
+        .collect::<HashMap<_, _>>();
+
+    let mut current_label: Option<String> = None;
+    let mut sections = HashMap::new();
+
+    for raw_line in markdown.lines() {
+        let trimmed = raw_line.trim_end();
+        if let Some(label_name) = header_to_label.get(trimmed) {
+            current_label = Some(label_name.clone());
+            sections
+                .entry(label_name.clone())
+                .or_insert_with(String::new);
+            continue;
+        }
+        if trimmed.starts_with("## ") {
+            current_label = None;
+            continue;
+        }
+        let Some(label_name) = &current_label else {
+            continue;
+        };
+
+        if let Some(body) = sections.get_mut(label_name) {
+            body.push_str(raw_line);
+            body.push('\n');
+        }
+    }
+
+    // Remove trailing newline from each section body to prevent accumulation
+    for body in sections.values_mut() {
+        if body.ends_with('\n') {
+            body.pop();
+        }
+    }
+
+    sections
 }
 
 /// 1行のチェックボックス項目がチェック済みかどうかを判定します
